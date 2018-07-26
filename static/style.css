@@ -1,0 +1,30 @@
+html {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: monospace;
+    padding: 1rem;
+    margin: 0;
+}
+
+*, *:before, *:after {
+    font-family: inherit;
+    box-sizing: inherit;
+}
+
+input, button {
+    padding: 0.5rem;
+    font-size: 1.5rem;
+}
+
+pre {
+    white-space: pre;
+    overflow: auto;
+    padding: 1rem;
+}
+
+.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+}
