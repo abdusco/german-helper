@@ -7,15 +7,167 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<main class="grid">
-    <div class="side">
-        <h1>Deutsch</h1>
-        {% include "form.html" %}
-    </div>
-    <div class="content">
-        <div class="examples"></div>
-    </div>
-</main>
-<script src="{{ url_for('static', filename='main.js') }}"></script>
+<div id="app">
+    <main class="grid">
+        <div class="side">
+            <form @submit.prevent="onSubmit"
+                  class="search no-select">
+                <div>
+                    <input type="text"
+                           name="q"
+                           v-model="query"
+                           placeholder="type a word"
+                           autofocus>
+                </div>
+                <div class="push-down">
+                    <template v-for="provider in providers">
+                        <label :for="'provider__' + provider.name">
+                            <input type="checkbox"
+                                   :id="'provider__' + provider.name"
+                                   v-model="provider.active">
+                            <span :class="{cross: !provider.active}">
+                                [[ provider.name ]]
+                            </span>
+                        </label>
+                    </template>
+                </div>
+                <div class="push-down" v-show="query">
+                    <button
+                            :disabled="!canSearch()"
+                    >
+                        Search
+                    </button>
+                </div>
+            </form>
+            <button class="push-down"
+                    v-show="hasExamples()"
+                    @click="copyExamples">Copy
+            </button>
+        </div>
+        <div class="content">
+            <div class="examples" v-if="hasExamples()">
+                <example v-for="example in examples"
+                         v-bind:key="example.provider"
+                         v-bind:data="example"></example>
+            </div>
+        </div>
+    </main>
+</div>
+<script type="text/x-template" id="provider-example">
+    <section class="provider" :class="{dim: data.examples.length < 1}">
+        <div class="no-select">
+            <a :href="data.url" class="dim">[[ data.provider ]]</a>
+            <h2 class="no-select">[[ data.term ]]</h2>
+        </div>
+        <ul v-if="data.examples.length">
+            <li v-for="ex in breakLines(data.examples)">[[ ex ]]</li>
+        </ul>
+        <p v-else class="no-select">No examples</p>
+    </section>
+</script>
+<script src="{{ url_for('static', filename='vue.js') }}"></script>
+<script>
+    const providers = {{ providers|tojson }};
+
+    const exampleProvider = Vue.component('example', {
+        template: '#provider-example',
+        delimiters: ['[[', ']]'],
+        props: ['data'],
+        methods: {
+            breakLines: function (lines) {
+                return lines.map(l => l.replace('\n', '<br>'));
+            }
+        }
+    });
+
+    const app = new Vue({
+        el: '#app',
+        delimiters: ['[[', ']]'],
+        data: {
+            providers: providers.map(p => ({name: p, active: true})),
+            query: '',
+            examples: [],
+        },
+        methods: {
+            canSearch: function () {
+                return this.providers.filter(p => p.active).length > 0;
+            },
+            hasExamples: function () {
+                return this.examples
+                    .filter(ex => ex.examples.length)
+                    .length > 0;
+            },
+            onSubmit: function () {
+                this.examples = [];
+                this.search();
+            },
+            search: function () {
+                let activeProviders = this.providers.filter(p => p.active);
+                activeProviders.forEach(p => {
+                    this.fetchExamples(p.name, this.query)
+                        .then(data => {
+                            this.examples.push(data)
+                        })
+                        .catch(err => {
+                            this.examples.push({
+                                provider: p.name,
+                                term: 'Error',
+                                examples: [],
+                                url: ''
+                            })
+                        })
+                });
+            },
+            fetchExamples: function (provider, term) {
+                return fetch(`/examples/${provider}/${term}`)
+                    .then(res => res.json())
+            },
+            copyExamples: function () {
+                let all = this.examples
+                    .map(ex => ex.examples.join('\n'))
+                    .join('\n')
+                    .trim();
+                this.copyTextToClipboard(all);
+            },
+            copyTextToClipboard: function (text) {
+                if (window.clipboardData && window.clipboardData.setData) {
+                    // IE specific code path to prevent textarea being shown while dialog is visible.
+                    return clipboardData.setData("Text", text);
+                } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+                    var textarea = document.createElement("textarea");
+                    textarea.textContent = text;
+                    textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        return document.execCommand("copy");  // Security exception may be thrown by some browsers.
+                    } catch (ex) {
+                        console.warn("Copy to clipboard failed.", ex);
+                        return false;
+                    } finally {
+                        document.body.removeChild(textarea);
+                    }
+                }
+            },
+            bindKeyboard: function () {
+                window.addEventListener('keydown', function (e) {
+                    if (e.altKey && e.key === 'c') {
+                        this.copyExamples();
+                    }
+                }.bind(this));
+            },
+            bindPaste: function () {
+                window.addEventListener('paste', function (e) {
+                    this.query = (e.clipboardData || window.clipboardData).getData('text').trim();
+                    this.search();
+                }.bind(this));
+            }
+        },
+        created: function () {
+            this.bindKeyboard();
+            this.bindPaste();
+        }
+    })
+</script>
 </body>
 </html>
