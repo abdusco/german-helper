@@ -78,6 +78,17 @@ const app = new Vue({
                 }
             }
         },
+        getSelectedText: function () {
+            var text = '';
+            if (window.getSelection) {
+                text = window.getSelection().toString();
+            } else if (document.getSelection) {
+                text = document.getSelection().toString();
+            } else if (document.selection) {
+                text = document.selection.createRange().text;
+            }
+            return text;
+        },
         bindKeyboard: function () {
             window.addEventListener('keydown', function (e) {
                 if (e.altKey && e.key === 'c') {
@@ -85,8 +96,16 @@ const app = new Vue({
                 }
             }.bind(this));
         },
+        bindCopy: function () {
+            document.addEventListener('copy', function (e) {
+                if (this.getSelectedText()) return;
+                if (!this.hasExamples()) return;
+                document.body.click();
+                this.copyExamples();
+            }.bind(this))
+        },
         bindPaste: function () {
-            window.addEventListener('paste', function (e) {
+            document.addEventListener('paste', function (e) {
                 this.query = (e.clipboardData || window.clipboardData).getData('text').trim();
                 this.search();
             }.bind(this));
@@ -95,5 +114,9 @@ const app = new Vue({
     created: function () {
         this.bindKeyboard();
         this.bindPaste();
+        this.bindCopy();
+    },
+    mounted: function () {
+        document.querySelector('[name=q]').focus();
     }
 });
