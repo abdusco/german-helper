@@ -13,23 +13,24 @@ def home():
     return render_template('home.html', providers=get_providers_list())
 
 
-@app.route('/examples/<provider>/<term>')
-def examples_json(provider, term):
+@app.route('/examples/<provider_name>/<term>')
+def examples_json(provider_name, term):
     term = term.strip()
-    if provider == 'wiktionary':
-        examples = providers.get_wiktionary_examples(term)
-    elif provider == 'duden':
-        examples = providers.get_duden_examples(term)
-    elif provider == 'linguee':
-        examples = providers.get_linguee_examples(term)
+    if provider_name == 'wiktionary':
+        provider, url = providers.get_wiktionary(term)
+    elif provider_name == 'duden':
+        provider, url = providers.get_duden(term)
+    elif provider_name == 'linguee':
+        provider, url = providers.get_linguee(term)
 
-    if not examples:
+    if not provider:
         return abort(404)
 
     return jsonify({
-        'term': term,
-        'provider': provider,
-        'examples': examples
+        'term': provider.term,
+        'url': url,
+        'provider': provider.name,
+        'examples': provider.examples
     })
 
 

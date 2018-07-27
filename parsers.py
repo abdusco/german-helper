@@ -3,8 +3,15 @@ import re
 
 
 class WiktionaryDeutschParser:
+    name = 'Wiktionary Deutsch'
+
     def __init__(self, html: str):
         self.page = BeautifulSoup(html, 'html.parser')
+
+    @property
+    def term(self):
+        title = self.page.find('h1')
+        return title.text
 
     @property
     def examples(self):
@@ -23,8 +30,15 @@ class WiktionaryDeutschParser:
 
 
 class DudenParser:
+    name = 'Duden.de'
+
     def __init__(self, html: str):
         self.page = BeautifulSoup(html, 'html.parser')
+
+    @property
+    def term(self):
+        title = self.page.find('h1')
+        return title.text
 
     @property
     def examples(self):
@@ -44,12 +58,21 @@ class DudenParser:
                 except:
                     pass
 
-        return examples
+            return examples
+        except:
+            return []
 
 
 class LingueeParser:
+    name = 'Linguee'
+
     def __init__(self, html: str):
         self.page = BeautifulSoup(html, 'html.parser')
+
+    @property
+    def term(self):
+        featured_lemma = self.page.select_one('.lemma.featured .dictLink')
+        return featured_lemma.text
 
     @property
     def examples(self):

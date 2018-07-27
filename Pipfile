@@ -8,6 +8,7 @@ flask = "*"
 selenium = "*"
 requests = "*"
 "bs4" = "*"
+awesome-slugify = "*"
 
 [dev-packages]
 

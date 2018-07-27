@@ -1,51 +1,47 @@
-from requests import get, Response
+from requests import get, Response, RequestException
 from parsers import WiktionaryDeutschParser, DudenParser, LingueeParser
-from urllib.parse import urlencode, quote
-
-
-def make_wiktionary_url(term: str, endpoint='https://de.wiktionary.org/wiki/'):
-    return ''.join((endpoint, quote(term)))
-
-
-def make_duden_url(term: str, endpoint='https://www.duden.de/rechtschreibung/'):
-    return ''.join((endpoint, quote(term)))
-
-
-def make_linguee_url(term: str, endpoint='https://www.linguee.com/english-german/search?'):
-    return ''.join((endpoint, urlencode({
-        'query': term
-    })))
+from urllib.parse import quote
+from slugify import slugify_de
+from bs4 import BeautifulSoup
+import re
 
 
 def get_html(url: str):
     response: Response = get(url)
     if response.status_code != 200:
-        raise ReferenceError('Term not found')
+        raise FileNotFoundError('Page not found')
     return response.content
 
 
-def get_wiktionary_examples(term):
+def get_wiktionary(term):
     try:
-        url = make_wiktionary_url(term)
-        wikt = WiktionaryDeutschParser(get_html(url))
-        return wikt.examples
+        url = f'https://de.wiktionary.org/wiki/{quote(term)}'
+        return WiktionaryDeutschParser(get_html(url)), url
     except:
-        return []
+        return None, url
 
 
-def get_duden_examples(term):
+def get_duden(term):
+    term_ascii = slugify_de(term)
+    url = f'https://www.duden.de/rechtschreibung/{term_ascii}'
+    search_url = f'https://www.duden.de/suchen/dudenonline/{term}'
+
     try:
-        url = make_duden_url(term)
-        duden = DudenParser(get_html(url))
-        return duden.examples
+        html = get_html(url)
+    except FileNotFoundError:
+        html = get_html(search_url)
+        search_page = BeautifulSoup(html)
+        url = search_page.find('a', href=re.compile('rechtschreibung')).attrs['href']
+        html = get_html(url)
     except:
-        return []
+        return None, url
+
+    return DudenParser(html), url
 
 
-def get_linguee_examples(term):
+def get_linguee(term):
     try:
-        url = make_linguee_url(term)
-        linguee = LingueeParser(get_html(url))
-        return linguee.examples
+        url = f'https://www.linguee.com/english-german/search?query={term}'
+        return LingueeParser(get_html(url)), url
     except:
-        return []
+        return None, url
