@@ -70,12 +70,22 @@ class LingueeParser:
         self.page = BeautifulSoup(html, 'html.parser')
 
     @property
+    def is_usable(self):
+        try:
+            blocked_title = self.page.find('h1', text=re.compile('too many requests'))
+            return True
+        except:
+            return False
+
+    @property
     def term(self):
         featured_lemma = self.page.select_one('.lemma.featured .dictLink')
         return featured_lemma.text
 
     @property
     def examples(self):
+        if not self.is_usable:
+            return []
         try:
             examples = self.page.select('.exact .example')
             examples = [e.text.replace(' — ', '\n').strip()
