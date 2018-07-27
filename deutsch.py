@@ -4,9 +4,13 @@ import providers
 app = Flask(__name__)
 
 
+def get_providers_list():
+    return ['linguee', 'duden', 'wiktionary']
+
+
 @app.route('/')
 def home():
-    return render_template('home.html')
+    return render_template('home.html', providers=get_providers_list())
 
 
 @app.route('/examples/<provider>/<term>')

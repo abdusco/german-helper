@@ -1,0 +1,17 @@
+<form class="search no-select" name="search">
+    <div>
+        <input type="text" name="q" placeholder="type a word" autofocus>
+    </div>
+    <div class="push-down">
+        {% for provider in providers %}
+            <label for="provider__{{ provider }}">
+                <input id="provider__{{ provider }}" type="checkbox" value="{{ provider }}" name="provider"
+                       checked>
+                {{ provider }}
+            </label><br>
+        {% endfor %}
+    </div>
+    <div class="push-down">
+        <button>find examples</button>
+    </div>
+</form>

@@ -1,11 +1,21 @@
-{% extends "base.html" %}
-{% block content %}
-    <form class="search no-select">
-        <input type="text" name="q" placeholder="a word" autofocus>
-        <button>find examples</button>
-    </form>
-    <section class="examples"></section>
-    <style>
-
-    </style>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deutsch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<main class="grid">
+    <div class="side">
+        <h1>Deutsch</h1>
+        {% include "form.html" %}
+    </div>
+    <div class="content">
+        <div class="examples"></div>
+    </div>
+</main>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
