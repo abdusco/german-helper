@@ -14,6 +14,10 @@ body {
     box-sizing: inherit;
 }
 
+h2 {
+    margin: 0;
+}
+
 input, button {
     padding: 0.5rem;
     font-size: 1.5rem;
@@ -65,4 +69,14 @@ pre {
 .content {
     grid-area: content;
     overflow: auto;
+}
+
+.cross {
+    text-decoration: line-through;
+}
+
+.provider + provider {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid lightgrey;
 }
