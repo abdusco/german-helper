@@ -2,24 +2,22 @@ const exampleProvider = Vue.component('example', {
     template: '#provider-example',
     delimiters: ['[[', ']]'],
     props: ['data'],
-    methods: {
-        breakLines: function (lines) {
-            return lines.map(l => l.replace('\n', '<br>'));
-        }
-    }
 });
 
 const app = new Vue({
     el: '#app',
     delimiters: ['[[', ']]'],
     data: {
-        providers: providers.map(p => ({name: p, active: true})),
+        providers: providers.map(p => ({
+            name: p,
+            enabled: true
+        })),
         query: '',
         examples: [],
     },
     methods: {
         canSearch: function () {
-            return this.providers.filter(p => p.active).length > 0;
+            return this.providers.filter(p => p.enabled).length > 0;
         },
         hasExamples: function () {
             return this.examples
@@ -31,21 +29,22 @@ const app = new Vue({
         },
         search: function () {
             this.examples = [];
-            let activeProviders = this.providers.filter(p => p.active);
-            activeProviders.forEach(p => {
-                this.fetchExamples(p.name, this.query)
-                    .then(data => {
-                        this.examples.push(data)
-                    })
-                    .catch(err => {
-                        this.examples.push({
-                            provider: p.name,
-                            term: 'Error',
-                            examples: [],
-                            url: ''
+            this.providers
+                .filter(p => p.enabled)
+                .forEach(p => {
+                    this.fetchExamples(p.name, this.query)
+                        .then(data => {
+                            this.examples.unshift(data)
                         })
-                    })
-            });
+                        .catch(err => {
+                            this.examples.push({
+                                provider: p.name,
+                                term: 'Error',
+                                examples: [],
+                                url: ''
+                            })
+                        })
+                });
         },
         fetchExamples: function (provider, term) {
             return fetch(`/examples/${provider}/${term}`)
