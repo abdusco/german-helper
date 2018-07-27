@@ -8,10 +8,13 @@ class WiktionaryDeutschParser:
 
     @property
     def examples(self):
-        examples_title: Tag = self.page.find(title='Verwendungsbeispielsätze')
-        example_list = examples_title.find_next_siblings('dl')[0]
-        examples = example_list.text.split('\n')
-        return self.__clean_examples(examples)
+        try:
+            examples_title: Tag = self.page.find(title='Verwendungsbeispielsätze')
+            example_list = examples_title.find_next_siblings('dl')[0]
+            examples = example_list.text.split('\n')
+            return self.__clean_examples(examples)
+        except:
+            return []
 
     def __clean_examples(self, examples: list):
         # remove [x] from examples
@@ -25,20 +28,21 @@ class DudenParser:
 
     @property
     def examples(self):
-        example_title = self.page.find('h3', string=re.compile('Beispiel'))
-        example_section = example_title.find_parent('section', class_='block')
-        example_titles = example_section.find_all('h3', text=re.compile('Beispiel'))
-        example_wrappers = [t.next_sibling for t in example_titles if t.next_siblings]
-        w: Tag
-        examples = []
-        for w in example_wrappers:
-            try:
-                if w.name == 'ul':
-                    examples += [li.text for li in w.find_all('li')]
-                else:
-                    examples += [w.text]
-            except:
-                pass
+        try:
+            example_title = self.page.find('h3', string=re.compile('Beispiel'))
+            example_section = example_title.find_parent('section', class_='block')
+            example_titles = example_section.find_all('h3', text=re.compile('Beispiel'))
+            example_wrappers = [t.next_sibling for t in example_titles if t.next_siblings]
+            w: Tag
+            examples = []
+            for w in example_wrappers:
+                try:
+                    if w.name == 'ul':
+                        examples += [li.text.strip() for li in w.find_all('li')]
+                    else:
+                        examples += [w.text.strip()]
+                except:
+                    pass
 
         return examples
 
@@ -49,8 +53,10 @@ class LingueeParser:
 
     @property
     def examples(self):
-        exact_translations = self.page.find(class_='exact')
-        examples = exact_translations.find_all(class_='example')
-        examples = [e.text.replace(' — ', '\n')
-                    for e in examples]
-        return examples
+        try:
+            examples = self.page.select('.exact .example')
+            examples = [e.text.replace(' — ', '\n').strip()
+                        for e in examples]
+            return examples
+        except:
+            return []
