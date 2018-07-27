@@ -31,7 +31,10 @@ def get_duden(term):
     except FileNotFoundError:
         html = get_html(search_url)
         search_page = BeautifulSoup(html)
-        url = search_page.find('a', href=re.compile('rechtschreibung')).attrs['href']
+        first_link = search_page.find('a', href=re.compile('rechtschreibung'))
+        if not first_link:
+            raise
+        url = first_link.attrs.get('href')
         html = get_html(url)
     except:
         return None, url
