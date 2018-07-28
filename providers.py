@@ -28,7 +28,7 @@ def get_duden(term):
         html = get_html(url)
     except NotFound:
         html = get_html(search_url)
-        search_page = BeautifulSoup(html)
+        search_page = BeautifulSoup(html, 'html.parser')
         first_link = search_page.find('a', href=re.compile('rechtschreibung'))
         if not first_link:
             raise NotFound
@@ -40,4 +40,16 @@ def get_duden(term):
 
 def get_linguee(term):
     url = f'https://www.linguee.de/deutsch-englisch/uebersetzung/{quote(term)}.html'
-    return LingueeParser(get_html(url)), url
+
+    html = get_html(url)
+    page = BeautifulSoup(html, 'html.parser')
+    did_you_mean = page.find('h1', class_='didyoumean')
+    no_results = page.find('h1', class_='noresults')
+    if no_results:
+        raise NotFound
+    if did_you_mean:
+        meant = did_you_mean.find('a')
+        url = 'https://www.linguee.de{}'.format(meant.attrs['href'])
+        html = get_html(url)
+
+    return LingueeParser(html), url
