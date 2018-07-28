@@ -95,6 +95,7 @@ class LingueeParser:
             examples = self.page.select('.isMainTerm .exact .example')
             examples = [e.text.replace(' — ', '\n').strip()
                         for e in examples]
-            return examples
+            if not examples:
+                raise NoExamples
         except:
             raise NoExamples
