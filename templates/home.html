@@ -8,6 +8,7 @@
 </head>
 <body>
 <div id="app">
+    <messages v-bind:messages="messages" v-if="messages.length"></messages>
     <main class="grid">
         <div class="side">
             <form @submit.prevent="onSubmit"
@@ -45,26 +46,44 @@
             </button>
         </div>
         <div class="content">
-            <div class="examples">
-                <example v-for="example in examples"
-                         v-bind:key="example.provider"
-                         v-bind:data="example"></example>
+            <div class="examples" v-if="examples.length">
+                <example v-for="e in examples"
+                         :key="e.provider"
+                         :provider="e.provider"
+                         :examples="e.examples"
+                         :url="e.url"
+                         :term="e.term"
+                ></example>
             </div>
         </div>
     </main>
 </div>
-<script type="text/x-template" id="provider-example">
-    <section :class="{dim: data.examples.length < 1, provider: true}">
+
+
+<script type="text/x-template" id="example-template">
+    <section :class="{dim: examples.length < 1, provider: true}">
         <div class="no-select">
-            <a :href="data.url" class="dim">[[ data.provider ]]</a>
-            <h2 class="no-select">[[ data.term ]]</h2>
+            <a :href="url" class="dim" target="_blank">[[ provider ]]</a>
+            <h2 class="no-select">[[ term ]]</h2>
         </div>
-        <ul v-if="data.examples.length">
-            <li v-for="ex in data.examples">[[ ex ]]</li>
+        <ul v-if="examples.length">
+            <li v-for="ex in examples">[[ ex ]]</li>
         </ul>
         <p v-else class="no-select">No examples</p>
     </section>
 </script>
+
+
+<script type="text/x-template" id="messages-template">
+    <ul class="messages list-reset">
+        <li v-for="m in messages">
+            <b class="provider">[[ m.provider ]]</b>:
+            <span class="message">[[ m.message ]]</span>
+        </li>
+    </ul>
+</script>
+
+
 <script>
     const providers = {{ providers|tojson }};
 </script>

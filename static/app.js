@@ -1,7 +1,13 @@
-const exampleProvider = Vue.component('example', {
-    template: '#provider-example',
+const examples = Vue.component('example', {
+    template: '#example-template',
     delimiters: ['[[', ']]'],
-    props: ['data'],
+    props: ['provider', 'url', 'examples', 'term'],
+});
+
+const messages = Vue.component('messages', {
+    template: '#messages-template',
+    delimiters: ['[[', ']]'],
+    props: ['messages'],
 });
 
 const app = new Vue({
@@ -14,10 +20,16 @@ const app = new Vue({
         })),
         query: '',
         examples: [],
+        messages: [],
     },
     methods: {
+        hasMessages: function () {
+            return this.messages.length > 0;
+        },
         canSearch: function () {
-            return this.providers.filter(p => p.enabled).length > 0;
+            return this.providers
+                .filter(p => p.enabled)
+                .length > 0;
         },
         hasExamples: function () {
             return this.examples
@@ -29,26 +41,32 @@ const app = new Vue({
         },
         search: function () {
             this.examples = [];
+            this.messages = [];
+
             this.providers
                 .filter(p => p.enabled)
                 .forEach(p => {
                     this.fetchExamples(p.name, this.query)
-                        .then(data => {
-                            this.examples.unshift(data)
+                        .then(response => {
+                            if (response.status !== 'success') {
+                                throw new Error(response.message);
+                            }
+                            this.processExamples(response.data);
                         })
-                        .catch(err => {
-                            this.examples.push({
-                                provider: p.name,
-                                term: 'Error',
-                                examples: [],
-                                url: ''
-                            })
-                        })
+                        .catch(error => {
+                            this.processError(p.name, error.message);
+                        });
                 });
         },
         fetchExamples: function (provider, term) {
             return fetch(`/examples/${provider}/${term}`)
-                .then(res => res.json())
+                .then(res => res.json());
+        },
+        processExamples: function (data) {
+            this.examples.unshift(data);
+        },
+        processError: function (provider, message) {
+            this.messages.push({provider, message});
         },
         copyExamples: function () {
             let all = this.examples
@@ -77,31 +95,17 @@ const app = new Vue({
                 }
             }
         },
-        getSelectedText: function () {
-            var text = '';
-            if (window.getSelection) {
-                text = window.getSelection().toString();
-            } else if (document.getSelection) {
-                text = document.getSelection().toString();
-            } else if (document.selection) {
-                text = document.selection.createRange().text;
-            }
-            return text;
-        },
         bindKeyboard: function () {
             window.addEventListener('keydown', function (e) {
                 if (e.altKey && e.key === 'c') {
+                    if (!this.hasExamples()) return;
+                    this.$el.click();
                     this.copyExamples();
                 }
+                else if (e.altKey && e.key === 'n') {
+                    this.$el.classList.toggle('night');
+                }
             }.bind(this));
-        },
-        bindCopy: function () {
-            document.addEventListener('copy', function (e) {
-                if (this.getSelectedText()) return;
-                if (!this.hasExamples()) return;
-                document.body.click();
-                this.copyExamples();
-            }.bind(this))
         },
         bindPaste: function () {
             document.addEventListener('paste', function (e) {
@@ -113,7 +117,6 @@ const app = new Vue({
     created: function () {
         this.bindKeyboard();
         this.bindPaste();
-        this.bindCopy();
     },
     mounted: function () {
         document.querySelector('[name=q]').focus();

@@ -4,14 +4,18 @@ html {
 
 body {
     font-family: monospace;
-    padding: 1rem;
     line-height: 1.5;
     margin: 0;
+    padding: 0;
 }
 
 *, *:before, *:after {
     font-family: inherit;
     box-sizing: inherit;
+}
+
+a {
+    color: dodgerblue;
 }
 
 h2 {
@@ -38,6 +42,13 @@ pre {
     word-wrap: normal;
 }
 
+.night,
+.night input,
+.night button {
+    color: whitesmoke;
+    background-color: #333;
+}
+
 .center {
     text-align: center;
 }
@@ -55,9 +66,18 @@ pre {
     margin-top: 1rem;
 }
 
+.cross {
+    text-decoration: line-through;
+}
+
+.list-reset {
+    margin: 0;
+    padding: 0;
+}
+
 .grid {
     display: grid;
-    grid-gap: 2rem;
+    grid-gap: 1rem;
     grid-template-columns: 1fr 3fr;
     grid-template-areas: "side content";
 }
@@ -71,12 +91,24 @@ pre {
     overflow: auto;
 }
 
-.cross {
-    text-decoration: line-through;
+#app {
+    padding: 1rem;
+    min-height: 100vh;
 }
 
 .provider + .provider {
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid ;
+    border-top: 1px solid;
+}
+
+.messages {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 1rem;
+
+    background-color: tomato;
+    color: white;
 }
