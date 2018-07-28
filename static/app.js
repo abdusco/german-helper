@@ -21,6 +21,7 @@ const app = new Vue({
         query: '',
         examples: [],
         messages: [],
+        timeout: null
     },
     methods: {
         hasMessages: function () {
@@ -67,6 +68,8 @@ const app = new Vue({
         },
         processError: function (provider, message) {
             this.messages.push({provider, message});
+            if (this.timeout) clearTimeout(this.timeout);
+            this.timeout = setTimeout(() => this.messages = [], 5000);
         },
         copyExamples: function () {
             let all = this.examples
