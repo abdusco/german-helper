@@ -15,7 +15,7 @@ class WiktionaryDeutschParser:
         title = self.page.find('h1')
         if title:
             return title.text
-        raise MissingContent('No term')
+        raise MissingContent('No term on the page')
 
     @property
     def examples(self):
@@ -44,7 +44,7 @@ class DudenParser:
         title = self.page.find('h1')
         lexem = self.page.select_one('.entry .lexem')
         if not title or not lexem:
-            raise MissingContent('No term')
+            raise MissingContent('No term on the page')
         return f'{title.text} ({lexem.text})'
 
     @property
@@ -93,7 +93,7 @@ class LingueeParser:
         lemma_type = self.page.select_one('.lemma.featured .tag_wordtype')
 
         if not featured_lemma or not lemma_type:
-            raise MissingContent('No term')
+            raise MissingContent('No term on the page')
 
         return f'{featured_lemma.text} ({lemma_type.text})'
 
