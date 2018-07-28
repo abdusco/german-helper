@@ -3,7 +3,7 @@ from parsers import WiktionaryDeutschParser, DudenParser, LingueeParser
 from urllib.parse import quote
 from slugify import slugify_de
 from bs4 import BeautifulSoup
-from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import NotFound, ServiceUnavailable
 import re
 
 
@@ -43,13 +43,10 @@ def get_linguee(term):
 
     html = get_html(url)
     page = BeautifulSoup(html, 'html.parser')
-    did_you_mean = page.find('h1', class_='didyoumean')
-    no_results = page.find('h1', class_='noresults')
-    if no_results:
+    main_term = page.select_one('.isMainTerm')
+    blocked_title = page.find('h1', text=re.compile('too many requests'))
+    if not main_term:
         raise NotFound
-    if did_you_mean:
-        meant = did_you_mean.find('a')
-        url = 'https://www.linguee.de{}'.format(meant.attrs['href'])
-        html = get_html(url)
-
+    if blocked_title:
+        raise ServiceUnavailable('Too many requests')
     return LingueeParser(html), url

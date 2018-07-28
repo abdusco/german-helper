@@ -79,14 +79,6 @@ class LingueeParser:
     def __init__(self, html: str):
         self.page = BeautifulSoup(html, 'html.parser')
 
-        no_results = self.page.find('h1', class_='noresults')
-        if no_results:
-            raise NotFound
-
-        blocked_title = self.page.find('h1', text=re.compile('too many requests'))
-        if blocked_title:
-            raise ServiceUnavailable('Too many requests')
-
     @property
     def term(self):
         featured_lemma = self.page.select_one('.lemma.featured .dictLink')
