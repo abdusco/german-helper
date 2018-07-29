@@ -97,5 +97,6 @@ class LingueeParser:
                         for e in examples]
             if not examples:
                 raise NoExamples
+            return examples
         except:
             raise NoExamples
