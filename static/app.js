@@ -1,84 +1,122 @@
-const examples = Vue.component('example', {
+const examples = Vue.component('Example', {
     template: '#example-template',
     delimiters: ['[[', ']]'],
     props: ['provider', 'url', 'examples', 'term'],
 });
 
-const messages = Vue.component('messages', {
+const messages = Vue.component('Messages', {
     template: '#messages-template',
     delimiters: ['[[', ']]'],
     props: ['messages'],
 });
 
+const searchForm = Vue.component('SearchForm', {
+    template: '#search-form-template',
+    delimiters: ['[[', ']]'],
+    props: ['providers', 'query', 'isBusy'],
+    data: function () {
+        return {
+            term: this.query,
+        }
+    },
+    computed: {
+        enabledProviders() {
+            return this.providers.filter(p => p.enabled);
+        },
+        canSearch() {
+            return !this.isBusy
+                && this.term
+                && this.enabledProviders.length > 0;
+        }
+    },
+    watch: {
+        query(now, then) {
+            this.term = now;
+        }
+    },
+    methods: {
+        onSubmit() {
+            this.$emit('search', this.term, this.enabledProviders)
+        },
+    },
+});
+
+
 const app = new Vue({
     el: '#app',
     delimiters: ['[[', ']]'],
     data: {
-        providers: providers.map(p => ({
-            name: p,
-            enabled: true
-        })),
+        providers: providers.map(name => ({name, enabled: true})),
         query: '',
+        autoSearch: true,
+        isBusy: false,
         examples: [],
         messages: [],
         timeout: null
     },
-    methods: {
-        hasMessages: function () {
+    computed: {
+        hasMessages() {
             return this.messages.length > 0;
         },
-        canSearch: function () {
-            return this.providers
-                .filter(p => p.enabled)
-                .length > 0;
+        hasExamples() {
+            return this.examples.filter(ex => ex.examples.length).length > 0;
         },
-        hasExamples: function () {
-            return this.examples
-                .filter(ex => ex.examples.length)
-                .length > 0;
+        enabledProviders() {
+            return this.providers.filter(p => p.enabled);
         },
-        onSubmit: function () {
-            this.search();
+    },
+    methods: {
+        onSearch(term, providers) {
+            this.search(term, providers)
         },
-        search: function () {
+        search: function (term, providers) {
+            if (!term) return;
+            if (!providers) return;
+
             this.examples = [];
             this.messages = [];
 
-            this.providers
-                .filter(p => p.enabled)
-                .forEach(p => {
-                    this.fetchExamples(p.name, this.query)
-                        .then(response => {
-                            if (response.status !== 'success') {
-                                throw new Error(response.message);
-                            }
-                            this.processExamples(response.data);
-                        })
-                        .catch(error => {
-                            this.processError(p.name, error.message);
-                        });
-                });
+            this.isBusy = true;
+            Promise.all(
+                providers.map(p => this.fetchExamples(p.name, term)
+                    .then(response => {
+                        if (response.status !== 'success') {
+                            throw new Error(response.message);
+                        }
+                        this.processExamples(response.data);
+                    })
+                    .catch(error => {
+                        this.processError(p.name, error.message);
+                    }))
+            )
+                .then(() => this.isBusy = false);
+
+
         },
-        fetchExamples: function (provider, term) {
+        fetchExamples(provider, term) {
             return fetch(`/examples/${provider}/${term}`)
                 .then(res => res.json());
         },
-        processExamples: function (data) {
+        processExamples(data) {
             this.examples.unshift(data);
         },
-        processError: function (provider, message) {
+        processError(provider, message) {
             this.messages.push({provider, message});
+
             if (this.timeout) clearTimeout(this.timeout);
             this.timeout = setTimeout(() => this.messages = [], 5000);
         },
-        copyExamples: function () {
-            let all = this.examples
-                .map(ex => ex.examples.join('\n'))
+        flattenExamples() {
+            return this.examples
+                .filter(ex => ex.examples.length)
+                .reduce((carry, ex) => carry.concat(ex.examples), [])
                 .join('\n')
                 .trim();
-            this.copyTextToClipboard(all);
         },
-        copyTextToClipboard: function (text) {
+        copyExamples() {
+            this.copyTextToClipboard(this.flattenExamples());
+        },
+        copyTextToClipboard(text) {
             if (window.clipboardData && window.clipboardData.setData) {
                 // IE specific code path to prevent textarea being shown while dialog is visible.
                 return clipboardData.setData("Text", text);
@@ -98,7 +136,7 @@ const app = new Vue({
                 }
             }
         },
-        bindKeyboard: function () {
+        bindKeyboard() {
             window.addEventListener('keydown', function (e) {
                 if (e.altKey && e.key === 'c') {
                     if (!this.hasExamples()) return;
@@ -110,18 +148,20 @@ const app = new Vue({
                 }
             }.bind(this));
         },
-        bindPaste: function () {
+        bindPaste() {
             document.addEventListener('paste', function (e) {
                 this.query = (e.clipboardData || window.clipboardData).getData('text').trim();
-                this.search();
+                if (this.autoSearch) {
+                    this.search(this.query, this.enabledProviders);
+                }
             }.bind(this));
         }
     },
-    created: function () {
+    created() {
         this.bindKeyboard();
         this.bindPaste();
     },
-    mounted: function () {
-        document.querySelector('[name=q]').focus();
+    mounted() {
+        document.querySelector('[name=query]').focus();
     }
 });
