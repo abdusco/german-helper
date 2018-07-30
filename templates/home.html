@@ -77,7 +77,7 @@
         <header>
             <label v-for="p in availableExamples">
                 <input type="checkbox" v-model="p.picked">
-                [[ p.provider ]] <span class="count">([[ p.examples.length  ]])</span>
+                <span :class="{cross: !p.picked}">[[ p.provider ]] <span class="count">([[ p.examples.length  ]])</span></span>
             </label>
             <button @click="copyExamples">Copy</button>
         </header>
