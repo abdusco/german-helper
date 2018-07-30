@@ -11,22 +11,25 @@
     <messages v-bind:messages="messages" v-if="messages.length"></messages>
     <div class="grid">
         <div class="side">
-            <h1>SuperExample 2000</h1>
-            <search-form
-                    :providers="providers"
-                    :query="query"
-                    :is-busy="isBusy"
-                    v-on:search="onSearch"
-            ></search-form>
+            <div class="sticky">
+                <h1>SuperExample 2000</h1>
+                <search-form
+                        class="push-down"
+                        :providers="providers"
+                        :query="query"
+                        :is-busy="isBusy"
+                        v-on:search="onSearch"
+                ></search-form>
 
-            <details class="push-down">
-                <summary><h3 class="inline">Options</h3></summary>
-                <div class="push-down">
-                    <label><input type="checkbox" v-model="autoSearch">
-                        Auto search on paste</label>
-                </div>
-            </details>
+                <details class="push-down">
+                    <summary><h3 class="inline">Options</h3></summary>
+                    <div class="push-down">
+                        <label><input type="checkbox" v-model="autoSearch">
+                            Auto search on paste</label>
+                    </div>
+                </details>
 
+            </div>
         </div>
         <div class="content">
             <h2 v-show="examples.length">Results</h2>

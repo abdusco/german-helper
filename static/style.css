@@ -18,7 +18,7 @@ a {
     color: dodgerblue;
 }
 
-h2 {
+h1, h2 {
     margin: 0;
 }
 
@@ -115,4 +115,9 @@ pre {
 
     background-color: tomato;
     color: white;
+}
+
+.sticky {
+    position: sticky;
+    top: 1rem;
 }
