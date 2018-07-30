@@ -42,11 +42,19 @@ pre {
     word-wrap: normal;
 }
 
+kbd {
+    font-weight: bold;
+}
+
 .night,
 .night input,
 .night button {
     color: whitesmoke;
     background-color: #333;
+}
+
+.small {
+    font-size: 0.8em;
 }
 
 .center {
