@@ -9,8 +9,10 @@ import re
 
 def get_html(url: str):
     response: Response = get(url)
-    if response.status_code >= 400:
+    if 400 <= response.status_code < 500:
         raise NotFound
+    elif 500 <= response.status_code:
+        raise ServiceUnavailable
     return response.content
 
 
@@ -44,9 +46,6 @@ def get_linguee(term):
     html = get_html(url)
     page = BeautifulSoup(html, 'html.parser')
     main_term = page.select_one('.isMainTerm')
-    blocked_title = page.find('h1', text=re.compile('too many requests'))
     if not main_term:
         raise NotFound
-    if blocked_title:
-        raise ServiceUnavailable('Too many requests')
     return LingueeParser(html), url
