@@ -1,4 +1,4 @@
-const examples = Vue.component('Example', {
+const example = Vue.component('Example', {
     template: '#example-template',
     delimiters: ['[[', ']]'],
     props: ['provider', 'url', 'examples', 'term'],
@@ -14,7 +14,7 @@ const searchForm = Vue.component('SearchForm', {
     template: '#search-form-template',
     delimiters: ['[[', ']]'],
     props: ['providers', 'query', 'isBusy'],
-    data: function () {
+    data() {
         return {
             term: this.query,
         }
@@ -41,6 +41,77 @@ const searchForm = Vue.component('SearchForm', {
     },
 });
 
+const examples = Vue.component('Examples', {
+    template: '#examples-template',
+    delimiters: ['[[', ']]'],
+    props: ['examples'],
+    data() {
+        return {
+            availableExamples: this.examples.map(e => ({
+                picked: e.examples.length > 0,
+                ...e
+            }))
+        }
+    },
+    watch: {
+        examples(now, then) {
+            this.availableExamples = now.map(e => ({
+                picked: e.examples.length > 0,
+                ...e
+            }))
+        }
+    },
+    computed: {
+        pickedExamples() {
+            return this.availableExamples.filter(ex => ex.picked)
+        },
+    },
+    methods: {
+        flattenExamples() {
+            return this.pickedExamples
+                .filter(ex => ex.examples.length)
+                .reduce((carry, ex) => carry.concat(ex.examples), [])
+                .join('\n')
+                .trim();
+        },
+        copyExamples() {
+            this.copyTextToClipboard(this.flattenExamples());
+        },
+        copyTextToClipboard(text) {
+            if (window.clipboardData && window.clipboardData.setData) {
+                // IE specific code path to prevent textarea being shown while dialog is visible.
+                return clipboardData.setData("Text", text);
+            } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+                var textarea = document.createElement("textarea");
+                textarea.textContent = text;
+                textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    return document.execCommand("copy");  // Security exception may be thrown by some browsers.
+                } catch (ex) {
+                    console.warn("Copy to clipboard failed.", ex);
+                    return false;
+                } finally {
+                    document.body.removeChild(textarea);
+                }
+            }
+        },
+        onKeyDown(e) {
+            if (e.altKey && e.key === 'c') {
+                if (!this.pickedExamples.length) return;
+                this.copyExamples();
+            }
+        }
+
+    },
+    mounted() {
+        window.addEventListener('keydown', this.onKeyDown);
+    },
+    beforeDestroy() {
+        window.removeEventListener('keydown', this.onKeyDown);
+    }
+});
 
 const app = new Vue({
     el: '#app',
@@ -106,44 +177,9 @@ const app = new Vue({
             if (this.timeout) clearTimeout(this.timeout);
             this.timeout = setTimeout(() => this.messages = [], 5000);
         },
-        flattenExamples() {
-            return this.examples
-                .filter(ex => ex.examples.length)
-                .reduce((carry, ex) => carry.concat(ex.examples), [])
-                .join('\n')
-                .trim();
-        },
-        copyExamples() {
-            this.copyTextToClipboard(this.flattenExamples());
-        },
-        copyTextToClipboard(text) {
-            if (window.clipboardData && window.clipboardData.setData) {
-                // IE specific code path to prevent textarea being shown while dialog is visible.
-                return clipboardData.setData("Text", text);
-            } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
-                var textarea = document.createElement("textarea");
-                textarea.textContent = text;
-                textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
-                document.body.appendChild(textarea);
-                textarea.select();
-                try {
-                    return document.execCommand("copy");  // Security exception may be thrown by some browsers.
-                } catch (ex) {
-                    console.warn("Copy to clipboard failed.", ex);
-                    return false;
-                } finally {
-                    document.body.removeChild(textarea);
-                }
-            }
-        },
         bindKeyboard() {
             window.addEventListener('keydown', function (e) {
-                if (e.altKey && e.key === 'c') {
-                    if (!this.hasExamples()) return;
-                    this.$el.click();
-                    this.copyExamples();
-                }
-                else if (e.altKey && e.key === 'n') {
+                if (e.altKey && e.key === 'n') {
                     this.$el.classList.toggle('night');
                 }
             }.bind(this));

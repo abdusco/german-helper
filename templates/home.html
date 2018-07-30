@@ -11,17 +11,13 @@
     <messages v-bind:messages="messages" v-if="messages.length"></messages>
     <div class="grid">
         <div class="side">
-
+            <h1>SuperExample 2000</h1>
             <search-form
                     :providers="providers"
                     :query="query"
                     :is-busy="isBusy"
                     v-on:search="onSearch"
             ></search-form>
-
-            <div class="push-down" v-show="hasExamples">
-                <button @click="copyExamples">Copy</button>
-            </div>
 
             <details class="push-down">
                 <summary><h3 class="inline">Options</h3></summary>
@@ -33,15 +29,11 @@
 
         </div>
         <div class="content">
-            <div class="examples" v-if="examples.length">
-                <example v-for="e in examples"
-                         :key="e.provider"
-                         :provider="e.provider"
-                         :examples="e.examples"
-                         :url="e.url"
-                         :term="e.term"
-                ></example>
-            </div>
+            <h2 v-show="examples.length">Results</h2>
+            <examples
+                    v-show="examples.length"
+                    :examples="examples"
+            ></examples>
         </div>
     </div>
 </main>
@@ -69,11 +61,33 @@
 </script>
 
 
+<script type="text/x-template" id="examples-template">
+    <article class="examples">
+        <header>
+            <label v-for="p in availableExamples">
+                <input type="checkbox" v-model="p.picked">
+                [[ p.provider ]] <span class="count">([[ p.examples.length  ]])</span>
+            </label>
+            <button @click="copyExamples">Copy</button>
+        </header>
+        <div class="push-down">
+            <example v-for="e in pickedExamples"
+                     :key="e.provider"
+                     :provider="e.provider"
+                     :examples="e.examples"
+                     :url="e.url"
+                     :term="e.term"
+            ></example>
+        </div>
+    </article>
+</script>
+
+
 <script type="text/x-template" id="example-template">
     <section :class="{dim: examples.length < 1, provider: true}">
         <div class="no-select">
             <a :href="url" class="dim" target="_blank">[[ provider ]]</a>
-            <h2>[[ term ]]</h2>
+            <h3>[[ term ]]</h3>
         </div>
         <ul v-if="examples.length">
             <li v-for="ex in examples">[[ ex ]]</li>
