@@ -13,7 +13,7 @@ const messages = Vue.component('Messages', {
 const searchForm = Vue.component('SearchForm', {
     template: '#search-form-template',
     delimiters: ['[[', ']]'],
-    props: ['providers', 'query', 'isBusy'],
+    props: ['providers', 'query', 'isBusy', 'autoSearch'],
     data() {
         return {
             term: this.query,
@@ -38,7 +38,30 @@ const searchForm = Vue.component('SearchForm', {
         onSubmit() {
             this.$emit('search', this.term, this.enabledProviders)
         },
+        focusSearch() {
+            document.querySelector('[name=query]').focus();
+        },
+        bindKeyboard() {
+            window.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    this.focusSearch();
+                }
+            }.bind(this))
+        },
+        bindPaste() {
+            document.addEventListener('paste', function (e) {
+                this.term = (e.clipboardData || window.clipboardData).getData('text').trim();
+                if (this.autoSearch && this.canSearch) {
+                    this.$emit('search', this.term, this.enabledProviders);
+                }
+            }.bind(this));
+        },
     },
+    mounted() {
+        this.bindKeyboard();
+        this.bindPaste();
+        this.focusSearch();
+    }
 });
 
 const examples = Vue.component('Examples', {
@@ -184,20 +207,8 @@ const app = new Vue({
                 }
             }.bind(this));
         },
-        bindPaste() {
-            document.addEventListener('paste', function (e) {
-                this.query = (e.clipboardData || window.clipboardData).getData('text').trim();
-                if (this.autoSearch) {
-                    this.search(this.query, this.enabledProviders);
-                }
-            }.bind(this));
-        }
     },
     created() {
         this.bindKeyboard();
-        this.bindPaste();
     },
-    mounted() {
-        document.querySelector('[name=query]').focus();
-    }
 });
