@@ -64,7 +64,7 @@
                 <span :class="{cross: !provider.enabled}">[[ provider.name ]]</span>
             </label>
         </div>
-        <button class="push-down wide"
+        <button class="push-down button wide"
                 :disabled="!canSearch">
             [[ isBusy ? 'Searching...' : 'Search' ]]
         </button>
@@ -79,7 +79,7 @@
                 <input type="checkbox" v-model="p.picked">
                 <span :class="{cross: !p.picked}">[[ p.provider ]] <span class="count">([[ p.examples.length  ]])</span></span>
             </label>
-            <button @click="copyExamples">Copy</button>
+            <button class="button button--small" @click="copyExamples">Copy</button>
         </header>
         <div class="push-down">
             <example v-for="e in pickedExamples"

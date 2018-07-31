@@ -22,9 +22,17 @@ h1, h2 {
     margin: 0;
 }
 
-input, button {
-    padding: 0.5rem;
-    font-size: 1.5rem;
+input {
+    padding: 0.5em;
+    font-size: inherit;
+}
+
+.button {
+    font-size: 1.25em;
+    padding: 0.5rem 1rem;
+}
+.button--small {
+    font-size: 1rem;
 }
 
 .wide {
