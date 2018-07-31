@@ -39,7 +39,9 @@ const searchForm = Vue.component('SearchForm', {
             this.$emit('search', this.term, this.enabledProviders)
         },
         focusSearch() {
-            document.querySelector('[name=query]').focus();
+            let input = document.querySelector('[name=query]');
+            input.focus();
+            input.select();
         },
         bindKeyboard() {
             window.addEventListener('keydown', function (e) {
