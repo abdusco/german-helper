@@ -1,6 +1,6 @@
 from flask import Flask, render_template, abort, redirect, request, url_for, jsonify
 import providers
-from werkzeug.exceptions import NotFound, ServiceUnavailable
+from werkzeug.exceptions import NotFound, ServiceUnavailable, BadRequest
 from errors import NoExamples, MissingContent
 
 app = Flask(__name__)
@@ -38,6 +38,16 @@ def examples_json(provider_name, term):
         raise e
     except NotFound:
         raise NotFound(f'No relevant results for „{term}“')
+
+
+@app.route('/conjugation/<verb>')
+def declension(verb: str):
+    provider, url = providers.get_verbformen_conjugation(verb)
+    return jsonify(status='success', data={
+        'conjugation': provider.conjugation,
+        'conjugation_str': ', '.join(provider.conjugation),
+        'provider': provider.name
+    })
 
 
 @app.errorhandler(ServiceUnavailable)

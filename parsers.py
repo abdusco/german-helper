@@ -118,6 +118,28 @@ class VerbFormenParser:
         examples = self.page.select('.rLst')
         examples_text = [ex.text for ex in examples]
         # unicode sequence is for superscript digits for footnotes
-        examples_text = [re.sub('(^\W+|\W+$|[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079])', '', ex)
+        examples_text = [self.remove_non_words(ex)
                          for ex in examples_text]
         return examples_text
+
+    @staticmethod
+    def remove_non_words(text: str):
+        return re.sub('(^\W+|\W+$|[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079])', '', text)
+
+
+class VerbFormenConjugationParser:
+    name = 'VerbFormen Conjugation'
+
+    def __init__(self, html: str):
+        self.page = BeautifulSoup(html, 'html.parser')
+
+    @property
+    def conjugation(self):
+        base_forms = self.page.select_one('#stammformen')
+        forms = [self.remove_non_words(f) for f in base_forms.text.strip().split('\n')]
+        return forms
+
+    @staticmethod
+    def remove_non_words(text: str):
+        return re.sub('(^\W+|\W+$|·|[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079])', '', text)
+
