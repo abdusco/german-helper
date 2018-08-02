@@ -58,16 +58,21 @@
                name="query"
                v-model="term"
                placeholder="type a word">
-        <div class="push-down">
-            <label v-for="provider in providers">
-                <input type="checkbox" v-model="provider.enabled">
-                <span :class="{cross: !provider.enabled}">[[ provider.name ]]</span>
-            </label>
-        </div>
         <button class="push-down button wide"
                 :disabled="!canSearch">
             [[ isBusy ? 'Searching...' : 'Search' ]]
         </button>
+        <details class="push-down" open>
+            <summary><h3 class="inline">Sources</h3></summary>
+            <div class="push-down">
+                <label class="wide"
+                       v-for="provider in providers">
+                    <input type="checkbox"
+                           v-model="provider.enabled">
+                    <span :class="{cross: !provider.enabled}">[[ provider.name ]]</span>
+                </label>
+            </div>
+        </details>
     </form>
 </script>
 
