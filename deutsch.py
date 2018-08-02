@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 
 def get_providers_list():
-    return ['linguee', 'duden', 'wiktionary']
+    return ['linguee', 'duden', 'wiktionary', 'verbformen']
 
 
 @app.route('/')
@@ -25,6 +25,8 @@ def examples_json(provider_name, term):
             provider, url = providers.get_duden(term)
         elif provider_name == 'linguee':
             provider, url = providers.get_linguee(term)
+        elif provider_name == 'verbformen':
+            provider, url = providers.get_verbformen(term)
 
         return jsonify(status='success', data={
             'term': provider.term,

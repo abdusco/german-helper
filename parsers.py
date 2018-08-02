@@ -100,3 +100,24 @@ class LingueeParser:
             return examples
         except:
             raise NoExamples
+
+
+class VerbFormenParser:
+    name = 'VerbFormen'
+
+    def __init__(self, html: str):
+        self.page = BeautifulSoup(html, 'html.parser')
+
+    @property
+    def term(self):
+        title = self.page.find('h1')
+        return title.text
+
+    @property
+    def examples(self):
+        examples = self.page.select('.rLst')
+        examples_text = [ex.text for ex in examples]
+        # unicode sequence is for superscript digits for footnotes
+        examples_text = [re.sub('(^\W+|\W+$|[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079])', '', ex)
+                         for ex in examples_text]
+        return examples_text
