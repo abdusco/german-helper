@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup, Tag
-from werkzeug.exceptions import NotFound, ServiceUnavailable
 from errors import NoExamples, MissingContent
 import re
 
@@ -28,9 +27,11 @@ class WiktionaryDeutschParser:
             raise NoExamples
 
     def __clean_examples(self, examples: list):
-        # remove [x] from examples
-        no_brackets = [re.sub('\[[^\]]+\]', '', e) for e in examples]
-        return [e.strip() for e in no_brackets if e]
+        # remove [#] from examples
+        examples = [re.sub('(\[[^\]]+\]|)', '', e) for e in examples]
+        # remove quotes
+        examples = [re.sub('[„“]', '', e) for e in examples]
+        return [e.strip() for e in examples if not e.isspace()]
 
 
 class DudenParser:
@@ -124,6 +125,7 @@ class VerbFormenParser:
 
     @staticmethod
     def remove_non_words(text: str):
+        # remove unicode superscript digits
         return re.sub('(^\W+|\W+$|[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079])', '', text)
 
 
@@ -141,6 +143,7 @@ class VerbFormenConjugationParser:
 
     @staticmethod
     def remove_non_words(text: str):
+        # remove unicode superscript digits
         return re.sub('(^\W+|\W+$|·|[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079])', '', text)
 
 
