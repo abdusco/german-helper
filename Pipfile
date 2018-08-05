@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 flask = "*"
-selenium = "*"
 requests = "*"
 "bs4" = "*"
 awesome-slugify = "*"
