@@ -52,14 +52,14 @@ def get_linguee(term):
 
 
 def get_verbformen(term: str):
-    if not term.endswith('en'):
+    if not term.endswith('n'):
         raise NotFound('Not a verb')
     url = f'https://www.verbformen.com/conjugation/examples/{quote(term)}.htm'
     return VerbFormenParser(get_html(url)), url
 
 
 def get_verbformen_conjugation(term: str):
-    if not term.endswith('en'):
+    if not term.endswith('n'):
         raise NotFound('Not a verb')
     url = f'https://www.verbformen.de/konjugation/?w={quote(term)}'
     return VerbFormenConjugationParser(get_html(url)), url
