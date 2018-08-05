@@ -7,8 +7,12 @@ from werkzeug.exceptions import NotFound, ServiceUnavailable
 import re
 
 
-def get_html(url: str):
-    response: Response = get(url)
+def get_html(url: str, headers=None):
+    if not headers:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3496.0 Safari/537.36'
+        }
+    response: Response = get(url, headers=headers)
     if 400 <= response.status_code < 500:
         raise NotFound
     elif 500 <= response.status_code:
