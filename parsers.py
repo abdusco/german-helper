@@ -143,3 +143,29 @@ class VerbFormenConjugationParser:
     def remove_non_words(text: str):
         return re.sub('(^\W+|\W+$|·|[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079])', '', text)
 
+
+class ReversoContextParser:
+    name = 'Reverso Context'
+
+    def __init__(self, html: str):
+        self.page = BeautifulSoup(html, 'html.parser')
+
+    @property
+    def term(self):
+        title = self.page.find('h1')
+        if title:
+            return title.text
+        raise MissingContent('No term on the page')
+
+    @property
+    def examples(self):
+        examples_list = self.page.select('#examples-content .example')
+        examples = []
+        for ex in examples_list:
+            try:
+                german = ex.select_one('.src').text.strip()
+                translation = ex.select_one('.trg').text.strip()
+                examples += [f'{german}\n{translation}']
+            except:
+                continue
+        return examples

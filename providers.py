@@ -1,5 +1,5 @@
-from requests import get, Response, RequestException
-from parsers import WiktionaryDeutschParser, DudenParser, LingueeParser, VerbFormenParser, VerbFormenConjugationParser
+from requests import get, Response
+from parsers import *
 from urllib.parse import quote
 from slugify import slugify_de
 from bs4 import BeautifulSoup
@@ -67,3 +67,9 @@ def get_verbformen_conjugation(term: str):
         raise NotFound('Not a verb')
     url = f'https://www.verbformen.de/konjugation/?w={quote(term)}'
     return VerbFormenConjugationParser(get_html(url)), url
+
+
+def get_reverso(term: str):
+    url = f'http://context.reverso.net/translation/german-english/{quote(term)}'
+    html = get_html(url)
+    return ReversoContextParser(html), url
