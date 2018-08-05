@@ -6,35 +6,20 @@ from errors import NoExamples, MissingContent
 app = Flask(__name__)
 
 
-def get_providers_list():
-    return [
-        'linguee',
-        'duden',
-        'wiktionary',
-        'verbformen',
-        'reverso',
-    ]
-
-
 @app.route('/')
 def home():
-    return render_template('home.html', providers=get_providers_list())
+    return render_template('home.html', providers=providers.get_providers_list())
 
 
 @app.route('/examples/<provider_name>/<term>')
 def examples_json(provider_name, term):
     try:
         term = term.strip()
-        if provider_name == 'wiktionary':
-            provider, url = providers.get_wiktionary(term)
-        elif provider_name == 'duden':
-            provider, url = providers.get_duden(term)
-        elif provider_name == 'linguee':
-            provider, url = providers.get_linguee(term)
-        elif provider_name == 'verbformen':
-            provider, url = providers.get_verbformen(term)
-        elif provider_name == 'reverso':
-            provider, url = providers.get_reverso(term)
+        provider_name = provider_name.strip()
+        for p in providers.get_providers_list():
+            if provider_name == p:
+                provider, url = getattr(providers, f'get_{p}')(term)
+                break
 
         return jsonify(status='success', data={
             'term': provider.term,
