@@ -16,6 +16,7 @@ def home():
 def examples_json(provider_name, term):
     try:
         term = term.strip()
+        assert term
         provider_name = provider_name.strip()
         for p in providers.get_providers_list():
             if provider_name == p:
@@ -28,8 +29,6 @@ def examples_json(provider_name, term):
             'provider': provider.name,
             'examples': provider.examples
         })
-    except NoExamples as e:
-        raise e
     except NotFound:
         raise NotFound(f'No relevant results for „{term}“')
 
