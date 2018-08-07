@@ -2,6 +2,7 @@ from flask import Flask, render_template, abort, redirect, request, url_for, jso
 import providers
 from werkzeug.exceptions import NotFound, ServiceUnavailable, BadRequest
 from errors import NoExamples, MissingContent
+import deepl
 
 app = Flask(__name__)
 
@@ -41,6 +42,20 @@ def declension(verb: str):
         'conjugation_str': ', '.join(provider.conjugation),
         'provider': provider.name
     })
+
+
+@app.route('/translate/<phrase>')
+def translate(phrase: str):
+    phrase = phrase.strip()
+    assert phrase
+
+    translations = deepl.get_translations(phrase)
+    return jsonify(status='success', data=translations)
+
+
+@app.errorhandler(AssertionError)
+def handle_validation_error(error):
+    return jsonify(status='fail', message=str(error)), 400
 
 
 @app.errorhandler(ServiceUnavailable)
