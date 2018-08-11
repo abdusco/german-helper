@@ -172,3 +172,27 @@ class ReversoContextParser:
             except:
                 continue
         return examples
+
+
+class CollinsParser:
+    name = 'Collins Dictionary'
+
+    def __init__(self, html: str):
+        self.page = BeautifulSoup(html, 'html.parser')
+
+    @property
+    def term(self):
+        return self.page.select_one('.h2_entry').text
+
+    @property
+    def examples(self):
+        quotes = self.page.select('.content-box-examples blockquote')
+        examples = []
+        for q in quotes:
+            try:
+                text = q.text.strip()
+            except (KeyError, AttributeError):
+                continue
+            if text:
+                examples.append(text)
+        return examples

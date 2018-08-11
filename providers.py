@@ -14,6 +14,7 @@ def get_providers_list():
         'wiktionary',
         'verbformen',
         'reverso',
+        'collins',
     ]
 
 
@@ -37,9 +38,8 @@ def get_wiktionary(term):
 
 
 def get_duden(term):
-    term_ascii = slugify_de(term)
-    url = f'https://www.duden.de/rechtschreibung/{term_ascii}'
-    search_url = f'https://www.duden.de/suchen/dudenonline/{term}'
+    url = f'https://www.duden.de/rechtschreibung/{quote(term)}'
+    search_url = f'https://www.duden.de/suchen/dudenonline/{quote(term)}'
 
     try:
         html = get_html(url)
@@ -87,3 +87,10 @@ def get_reverso(term: str):
     html = get_html(url)
 
     return ReversoContextParser(html), url
+
+
+def get_collins(term: str):
+    url = f'https://www.collinsdictionary.com/de/worterbuch/deutsch-englisch/{quote(term)}'
+    html = get_html(url)
+
+    return CollinsParser(html), url
