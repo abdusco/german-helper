@@ -39,19 +39,8 @@ def get_wiktionary(term):
 
 def get_duden(term):
     url = f'https://www.duden.de/rechtschreibung/{quote(term)}'
-    search_url = f'https://www.duden.de/suchen/dudenonline/{quote(term)}'
 
-    try:
-        html = get_html(url)
-    except NotFound:
-        html = get_html(search_url)
-        search_page = BeautifulSoup(html, 'html.parser')
-        first_link = search_page.find('a', href=re.compile('rechtschreibung'))
-        if not first_link:
-            raise NotFound
-        url = first_link.attrs['href']
-        html = get_html(url)
-
+    html = get_html(url)
     return DudenParser(html), url
 
 
