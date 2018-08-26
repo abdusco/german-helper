@@ -182,7 +182,10 @@ class CollinsParser:
 
     @property
     def term(self):
-        return self.page.select_one('.h2_entry').text
+        try:
+            return self.page.select_one('.h2_entry').text
+        except AttributeError:
+            raise MissingContent('No term on the page')
 
     @property
     def examples(self):
